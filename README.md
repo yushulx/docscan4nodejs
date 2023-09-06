@@ -29,3 +29,13 @@ This repository demonstrates how to use the **Dynamsoft Service REST API** to re
     ```bash
     node app.js
     ```
+
+   - Get all available scanners
+   
+     ![image](https://github.com/yushulx/dynamsoft-service-REST-API/assets/2202306/24fcb45d-1bea-45ba-9569-b9a2ef377b63)
+
+   - Acquire a Document
+     
+     ![image](https://github.com/yushulx/dynamsoft-service-REST-API/assets/2202306/2688269d-4f05-4734-bf1c-7ba4e2638d66)
+
+
