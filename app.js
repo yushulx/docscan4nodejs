@@ -63,7 +63,7 @@ async function acquireImage(index) {
     console.log('\nAcquire image from scanner: ' + index);
     let scanParams = {
         license: "LICENSE-KEY",
-        device: devices[index]
+        device: devices[index].device,
     };
 
     console.log(devices[index]);
