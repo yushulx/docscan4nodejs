@@ -9,33 +9,44 @@ module.exports = {
         // Device type: https://www.dynamsoft.com/web-twain/docs/info/api/Dynamsoft_Enum.html
         // http://127.0.0.1:18622/DWTAPI/Scanners?type=64
         let url = host + '/DWTAPI/Scanners'
-        let response = await axios.get(url)
-            .catch(error => {
-                console.log(error);
-            });
+        try {
+            let response = await axios.get(url)
+                .catch(error => {
+                    console.log(error);
+                });
 
-        console.log('\nAvailable scanners: ' + response.data.length);
-        if (response.status == 200 && response.data.length > 0) {
-            return response.data;
+            if (response.status == 200 && response.data.length > 0) {
+                console.log('\nAvailable scanners: ' + response.data.length);
+                return response.data;
+            }
+        } catch (error) {
+            console.log(error);
         }
         return [];
     },
     // Create a scan job by feeding one or multiple physical documents
     scanDocument: async function (host, parameters) {
-        let url = host + '/DWTAPI/ScanJobs'
-        let response = await axios.post(url, parameters)
-            .catch(error => {
-                console.log('Error: ' + error);
-            });
+        let url = host + '/DWTAPI/ScanJobs';
 
-        let jobId = response.data;
+        try {
+            let response = await axios.post(url, parameters)
+                .catch(error => {
+                    console.log('Error: ' + error);
+                });
 
-        if (response.status == 201) {
-            return jobId;
+            let jobId = response.data;
+
+            if (response.status == 201) {
+                return jobId;
+            }
+            else {
+                console.log(response);
+            }
         }
-        else {
-            console.log(response);
+        catch (error) {
+            console.log(error);
         }
+
 
         return '';
     },
