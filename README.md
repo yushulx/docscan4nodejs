@@ -53,6 +53,7 @@ parameters.config = {
 ```
 
 ## Quick Start
+Set the `LICENSE-KEY` in the code below. Then, run the code in a terminal:
 
 ```js
 const docscan4nodejs = require("docscan4nodejs")
