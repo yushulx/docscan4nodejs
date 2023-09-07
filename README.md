@@ -23,6 +23,9 @@ The package provides Node.js APIs for invoking **Dynamsoft Service REST API**. I
 ## Dynamsoft Service Configuration
 After installing the Dynamsoft Service, navigate to `http://127.0.0.1:18625/` in a web browser to configure the host and port settings. The default host IP address is set to 127.0.0.1. If you wish to make the service accessible over the network, you can update the host setting to a public IP address.
 
+![dynamsoft-service-config](https://github.com/yushulx/dynamsoft-service-REST-API/assets/2202306/e2b1292e-dfbd-4821-bf41-70e2847dd51e)
+
+
 ## JavaScript API
 - `getDevices(host)` - Get all available scanners. It returns an array of scanner objects.
 - `scanDocument(host, parameters)` - Create a scanner job by feeding one or multiple physical documents. It returns the job id.
