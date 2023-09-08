@@ -29,8 +29,9 @@ After installing the Dynamsoft Service, navigate to `http://127.0.0.1:18625/` in
 ## JavaScript API
 - `getDevices(host)` - Get all available scanners. It returns an array of scanner objects.
 - `scanDocument(host, parameters)` - Create a scanner job by feeding one or multiple physical documents. It returns the job id.
-- `getImages(host, jobId, directory)` - Get document images by job id. The directory specifies the physical location to save the images. It returns an array of image paths.
+- `getImageFiles(host, jobId, directory)` - Get document images by job id. The directory specifies the physical location to save the images. It returns an array of image paths.
 - `deleteJob(host, jobId)` - Delete a scan job by job id. It can interrupt the scan process.
+- `getImageStreams(host, jobId)` - Get document images by job id. It returns an array of image streams.
 
 ## Parameter Configuration
 The parameter configuration is based on [Dynamsoft Web TWAIN documentation](https://www.dynamsoft.com/web-twain/docs/info/api/Interfaces.html#DeviceConfiguration). It controls the behavior of the scanner. 

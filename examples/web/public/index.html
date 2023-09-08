@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Document Scanning Sample</title>
+    <script src="/node_modules/socket.io/client-dist/socket.io.js"></script>
+    <script src="utils.js"></script>
+    <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+    <h1> Document Scanning Sample</h1>
+
+    <select id="sources"></select><br />
+    <button onclick="acquireImage()">Scan Documents</button>
+
+
+    <div class="row">
+        <div class="full-img">
+            <img id="document-image">
+
+        </div>
+    </div>
+
+    <div class="thumb-bar" id="thumb-bar">
+        <div class="thumb-box" id="thumb-box">
+        </div>
+
+        <script>
+            const socket = io();
+            var data = [];
+            var devices = [];
+            var selectSources = document.getElementById("sources");
+            socket.on('message', (message) => {
+                try {
+                    let json = JSON.parse(message);
+                    if (json) {
+                        if (json['devices']) {
+                            selectSources.options.length = 0;
+                            devices = json['devices'];
+                            for (let i = 0; i < devices.length; i++) {
+                                console.log('\nIndex: ' + i + ', Name: ' + devices[i]['name']);
+                                let option = document.createElement("option");
+                                option.text = devices[i]['name'];
+                                option.value = i.toString();
+                                selectSources.add(option);
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.log(error)
+                }
+            });
+
+            socket.on('image', (buffer) => {
+                // Convert the Buffer into a base64 string
+                const base64Image = btoa(
+                    new Uint8Array(buffer)
+                        .reduce((data, byte) => data + String.fromCharCode(byte), '')
+                );
+
+                // Set the image src to display the image
+                let img = document.getElementById('document-image');
+                let url = `data:image/jpeg;base64,${base64Image}`;
+                img.src = url;
+
+                data.push(url);
+
+                let option = document.createElement("option");
+                option.selected = true;
+                option.text = url;
+                option.value = url;
+
+                let thumbnails = document.getElementById("thumb-box");
+                let newImage = document.createElement('img');
+                newImage.setAttribute('src', url);
+                if (thumbnails != null) {
+                    thumbnails.appendChild(newImage);
+                    newImage.addEventListener('click', e => {
+                        if (e != null && e.target != null) {
+                            let target = e.target;
+                            img.src = target.src;
+                        }
+                    });
+                }
+            });
+
+            function acquireImage() {
+                if (devices.length > 0 && selectSources.selectedIndex >= 0) {
+                    socket.emit('message', JSON.stringify({ 'scan': devices[selectSources.selectedIndex]['device'] }));
+                }
+
+            }
+
+            function onSelectChange(e) {
+                let image = document.getElementById("document-image");
+                image.src = e;
+                currentURL = e;
+                let index = data.indexOf(e);
+                if (index != -1 && index >= 4) {
+                    document.querySelector("#thumb-bar").scrollLeft = document.querySelector("#thumb-box").offsetWidth * (index - 4 + 1);
+                }
+                else {
+                    document.querySelector("#thumb-bar").scrollLeft = 0;
+                }
+            }
+
+        </script>
+
+</body>
+
+</html>

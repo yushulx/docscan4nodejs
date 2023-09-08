@@ -1,4 +1,4 @@
-const docscan4nodejs = require("../index.js")
+const docscan4nodejs = require("../../index.js")
 const readline = require('readline');
 
 let devices = [];
@@ -22,6 +22,7 @@ function askQuestion() {
         }
         else if (answer === '1') {
             docscan4nodejs.getDevices(host).then((scanners) => {
+                devices = [];
                 for (let i = 0; i < scanners.length; i++) {
                     devices.push(scanners[i]);
                     console.log('\nIndex: ' + i + ', Name: ' + scanners[i]['name']);
@@ -66,7 +67,7 @@ function askQuestion() {
                             if (jobId !== '') {
                                 console.log('job id: ' + jobId);
                                 (async () => {
-                                    let images = await docscan4nodejs.getImages(host, jobId, './');
+                                    let images = await docscan4nodejs.getImageFiles(host, jobId, './');
                                     for (let i = 0; i < images.length; i++) {
                                         console.log('Image ' + i + ': ' + images[i]);
                                     }

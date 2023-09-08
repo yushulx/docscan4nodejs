@@ -8,7 +8,7 @@ module.exports = {
         devices = [];
         // Device type: https://www.dynamsoft.com/web-twain/docs/info/api/Dynamsoft_Enum.html
         // http://127.0.0.1:18622/DWTAPI/Scanners?type=64
-        let url = host + '/DWTAPI/Scanners'
+        let url = host + '/DWTAPI/Scanners?type=64'
         try {
             let response = await axios.get(url)
                 .catch(error => {
@@ -67,8 +67,8 @@ module.exports = {
                 // console.log('Error:', error);
             });
     },
-    // Get document images by job id
-    getImages: async function (host, jobId, directory) {
+    // Get document image files by job id
+    getImageFiles: async function (host, jobId, directory) {
         let images = [];
         let url = host + '/DWTAPI/ScanJobs/' + jobId + '/NextDocument';
         console.log('Start downloading images......');
@@ -111,5 +111,34 @@ module.exports = {
         }
 
         return images;
-    }
+    },
+    // Get document image streams by job id
+    getImageStreams: async function (host, jobId) {
+        let streams = [];
+        let url = host + '/DWTAPI/ScanJobs/' + jobId + '/NextDocument';
+        console.log('Start downloading images......');
+        while (true) {
+            try {
+                const response = await axios({
+                    method: 'GET',
+                    url: url,
+                    responseType: 'stream',
+                });
+
+                if (response.status == 200) {
+                    streams.push(response.data);
+                }
+                else {
+                    console.log(response);
+                }
+
+            } catch (error) {
+                // console.error("Error downloading image:", error);
+                console.error('No more images.');
+                break;
+            }
+        }
+
+        return streams;
+    },
 };
