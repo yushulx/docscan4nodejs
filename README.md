@@ -15,7 +15,7 @@ The package provides Node.js APIs for invoking **Dynamsoft Service REST API**. I
 
 
 ## Prerequisites
--  Install [Dynamsoft Service for Windows](https://www.dynamsoft.com/codepool/downloads/DynamsoftServiceSetup.msi).
+-  Install [Dynamsoft Service REST Preview for Windows](https://www.dynamsoft.com/codepool/downloads/DynamsoftServiceSetup.msi).
     
     Currently, the REST API is only available on **Windows**. It will come to **Linux (x64, ARM64)** and **macOS** soon.
 - Request a [free trial license](https://www.dynamsoft.com/customer/license/trialLicense?product=dwt) for Dynamsoft Service.
@@ -25,8 +25,17 @@ After installing the Dynamsoft Service, navigate to `http://127.0.0.1:18625/` in
 
 ![dynamsoft-service-config](https://github.com/yushulx/dynamsoft-service-REST-API/assets/2202306/e2b1292e-dfbd-4821-bf41-70e2847dd51e)
 
+## REST API Reference
+By default, the REST API's host address is set to `http://127.0.0.1:18622`.
 
-## JavaScript API
+| Method | Endpoint        | Description                   | Parameters                         | Response                      |
+|--------|-----------------|-------------------------------|------------------------------------|-------------------------------|
+| GET    | `/DWTAPI/Scanners`    | Get a list of scanners  | None                               | `200 OK` with scanner list       |
+| POST   | `/DWTAPI/ScanJobs`    | Creates a scan job      | `license`, `device`, `config`      | `201 Created` with job ID    |
+| GET    | `/DWTAPI/ScanJobs/:id/NextDocument`| Retrieves a document image     | `id`: Job ID   | `200 OK` with image stream    |
+| DELETE | `/DWTAPI/ScanJobs/:id`| Deletes a scan job       | `id`: Job ID                      | `200 OK`              |
+
+## Node.js API
 - `getDevices(host)` - Get all available scanners. It returns an array of scanner objects.
 - `scanDocument(host, parameters)` - Create a scanner job by feeding one or multiple physical documents. It returns the job id.
 - `getImageFiles(host, jobId, directory)` - Get document images by job id. The directory specifies the physical location to save the images. It returns an array of image paths.
