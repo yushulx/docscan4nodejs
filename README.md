@@ -21,7 +21,7 @@ The package provides Node.js APIs for invoking **Dynamsoft Service REST API**. I
 - Request a [free trial license](https://www.dynamsoft.com/customer/license/trialLicense?product=dwt) for Dynamsoft Service.
 
 ## Dynamsoft Service Configuration
-After installing the Dynamsoft Service, navigate to `http://127.0.0.1:18625/` in a web browser to configure the host and port settings. The default host IP address is set to 127.0.0.1. If you wish to make the service accessible over the network, you can update the host setting to a public IP address.
+After installing the Dynamsoft Service, navigate to `http://127.0.0.1:18625/` in a web browser to configure the host and port settings. The default host IP address is set to 127.0.0.1. If you wish to make the service accessible over the local network in your office or company, you can update the host setting to a LAN IP address, such as **192.168.8.72**.
 
 ![dynamsoft-service-config](https://github.com/yushulx/dynamsoft-service-REST-API/assets/2202306/e2b1292e-dfbd-4821-bf41-70e2847dd51e)
 
@@ -53,93 +53,21 @@ parameters.config = {
 };
 ```
 
-## Quick Start
-Set the `LICENSE-KEY` in the code below. Then, run the code in a terminal:
+## Examples
+Set the `LICENSE-KEY` before running the following examples.
 
-```js
-const docscan4nodejs = require("docscan4nodejs")
-const readline = require('readline');
+- [Command-line](https://github.com/yushulx/dynamsoft-service-REST-API/tree/main/examples/command-line)
 
-let devices = [];
-let host = 'http://127.0.0.1:18622';
+  Get all available scanners
 
-const questions = `
-Please select an operation:
-1. Get scanners
-2. Acquire documents by scanner index
-3. Quit
-`
-let rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-function askQuestion() {
-    rl.question(questions, function (answer) {
-        if (answer === '3') {
-            rl.close();
-        }
-        else if (answer === '1') {
-            docscan4nodejs.getDevices(host).then((scanners) => {
-                for (let i = 0; i < scanners.length; i++) {
-                    devices.push(scanners[i]);
-                }    
-                askQuestion();
-            });
-        }
-        else if (answer == '2') {
-            if (devices.length == 0) {
-                console.log('Please get scanners first!\n');
-                askQuestion();
-                return;
-            }
+  ![image](https://github.com/yushulx/dynamsoft-service-REST-API/assets/2202306/24fcb45d-1bea-45ba-9569-b9a2ef377b63)
 
-            rl.question('\nSelect an index (<= ' + (devices.length - 1) + '): ', function (index) {
-                index = parseInt(index, 10);
-                if (isNaN(index)) {
-                    console.log("It is not a number.");
-                    askQuestion();
-                } else {
-                    if (index < 0 || index >= devices.length) {
-                        console.log("It is out of range.");
-                        
-                        askQuestion();
-                    } else {
-                        let parameters = {
-                            license: "LICENSE-KEY",
-                            device: devices[index].device,
-                        };
-
-                        parameters.config = {
-                            IfShowUI: false,
-                            PixelType: 2,
-                            Resolution: 200,
-                            IfFeederEnabled: false,
-                            IfDuplexEnabled: false,
-                        };
-
-                        docscan4nodejs.scanDocument(host, parameters).then((jobId) => {
-                            if (jobId !== '') {
-                                console.log('job id: ' + jobId);
-                                (async () => {
-                                    let images = await docscan4nodejs.getImages(host, jobId, './');
-                                    await docscan4nodejs.deleteJob(jobId);
-                                    askQuestion();
-                                })();
-                            }
-                        });
-                    }
-                }
-            });
-        }
-    });
-}
-
-askQuestion();
-```
-
-- Get all available scanners
-
-    ![image](https://github.com/yushulx/dynamsoft-service-REST-API/assets/2202306/24fcb45d-1bea-45ba-9569-b9a2ef377b63)
-
-- Acquire a Document
+  Acquire a Document
     
-    ![image](https://github.com/yushulx/dynamsoft-service-REST-API/assets/2202306/2688269d-4f05-4734-bf1c-7ba4e2638d66)
+  ![image](https://github.com/yushulx/dynamsoft-service-REST-API/assets/2202306/2688269d-4f05-4734-bf1c-7ba4e2638d66)
+
+- [Web server](https://github.com/yushulx/dynamsoft-service-REST-API/tree/main/examples/web)
+
+   ![server-side-document-scan](https://github.com/yushulx/dynamsoft-service-REST-API/assets/2202306/9a161dda-6f9d-473b-a2d4-168ebd5f6b0b)
 
 
