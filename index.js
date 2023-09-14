@@ -7,8 +7,8 @@ module.exports = {
     getDevices: async function (host) {
         devices = [];
         // Device type: https://www.dynamsoft.com/web-twain/docs/info/api/Dynamsoft_Enum.html
-        // http://127.0.0.1:18622/DWTAPI/Scanners?type=64
-        let url = host + '/DWTAPI/Scanners?type=64'
+        // http://127.0.0.1:18622/DWTAPI/Scanners?type=64 for TWAIN only
+        let url = host + '/DWTAPI/Scanners'
         try {
             let response = await axios.get(url)
                 .catch(error => {
