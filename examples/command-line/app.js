@@ -21,7 +21,7 @@ function askQuestion() {
             rl.close();
         }
         else if (answer === '1') {
-            docscan4nodejs.getDevices(host).then((scanners) => {
+            docscan4nodejs.getDevices(host, docscan4nodejs.ScannerType.TWAINSCANNER | docscan4nodejs.ScannerType.TWAINX64SCANNER).then((scanners) => {
                 devices = [];
                 for (let i = 0; i < scanners.length; i++) {
                     devices.push(scanners[i]);

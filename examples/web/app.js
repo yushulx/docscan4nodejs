@@ -79,8 +79,7 @@ io.on('connection', (socket) => {
         }
     });
 
-
-    docscan4nodejs.getDevices(host).then((scanners) => {
+    docscan4nodejs.getDevices(host, docscan4nodejs.ScannerType.TWAINSCANNER | docscan4nodejs.ScannerType.TWAINX64SCANNER).then((scanners) => {
         socket.emit('message', JSON.stringify({ 'devices': scanners }));
     });
 });

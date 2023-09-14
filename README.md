@@ -36,7 +36,7 @@ By default, the REST API's host address is set to `http://127.0.0.1:18622`.
 | DELETE | `/DWTAPI/ScanJobs/:id`| Deletes a scan job       | `id`: Job ID                      | `200 OK`              |
 
 ## Node.js API
-- `getDevices(host)` - Get all available scanners. It returns an array of scanner objects.
+- `getDevices(host, scannerType)` - Get all available scanners. It returns an array of scanner objects.
 - `scanDocument(host, parameters)` - Create a scanner job by feeding one or multiple physical documents. It returns the job id.
 - `getImageFiles(host, jobId, directory)` - Get document images by job id. The directory specifies the physical location to save the images. It returns an array of image paths.
 - `deleteJob(host, jobId)` - Delete a scan job by job id. It can interrupt the scan process.
