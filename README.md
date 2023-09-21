@@ -38,6 +38,7 @@ By default, the REST API's host address is set to `http://127.0.0.1:18622`.
 ## Node.js API
 - `getDevices(host, scannerType)` - Get all available scanners. It returns an array of scanner objects.
 - `scanDocument(host, parameters)` - Create a scanner job by feeding one or multiple physical documents. It returns the job id.
+- `getImageFile(host, jobId, directory)` - Get one document image by job id. The directory specifies the physical location to save the images. It returns the image path.
 - `getImageFiles(host, jobId, directory)` - Get document images by job id. The directory specifies the physical location to save the images. It returns an array of image paths.
 - `deleteJob(host, jobId)` - Delete a scan job by job id. It can interrupt the scan process.
 - `getImageStreams(host, jobId)` - Get document images by job id. It returns an array of image streams.

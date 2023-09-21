@@ -98,46 +98,61 @@ module.exports = {
                 // console.log('Error:', error);
             });
     },
+    // Get one document image file by job id
+    getImageFile: async function (host, jobId, directory) {
+        let url = host + '/DWTAPI/ScanJobs/' + jobId + '/NextDocument';
+        try {
+            const response = await axios({
+                method: 'GET',
+                url: url,
+                responseType: 'stream',
+            });
+
+            if (response.status == 200) {
+                let filename = await new Promise((resolve, reject) => {
+                    const timestamp = Date.now();
+                    const filename = `image_${timestamp}.jpg`;
+                    const imagePath = path.join(directory, filename);
+                    const writer = fs.createWriteStream(imagePath);
+                    response.data.pipe(writer);
+
+                    writer.on('finish', () => {
+                        console.log('Saved image to ' + imagePath + '\n');
+                        resolve(filename);
+                    });
+
+                    writer.on('error', (err) => {
+                        console.log(err);
+                        reject(err);
+                    });
+                });
+
+                return filename;
+            }
+            else {
+                console.log(response);
+            }
+
+        } catch (error) {
+            // console.error("Error downloading image:", error);
+            console.error('No more images.');
+            return '';
+        }
+
+        return '';
+    },
     // Get document image files by job id
     getImageFiles: async function (host, jobId, directory) {
         let images = [];
         let url = host + '/DWTAPI/ScanJobs/' + jobId + '/NextDocument';
         console.log('Start downloading images......');
         while (true) {
-            try {
-                const response = await axios({
-                    method: 'GET',
-                    url: url,
-                    responseType: 'stream',
-                });
-
-                if (response.status == 200) {
-                    await new Promise((resolve, reject) => {
-                        const timestamp = Date.now();
-                        const imagePath = path.join(directory, `image_${timestamp}.jpg`);
-                        const writer = fs.createWriteStream(imagePath);
-                        response.data.pipe(writer);
-
-                        writer.on('finish', () => {
-                            images.push(imagePath);
-                            console.log('Saved image to ' + imagePath + '\n');
-                            resolve();
-                        });
-
-                        writer.on('error', (err) => {
-                            console.log(err);
-                            reject(err);
-                        });
-                    });
-                }
-                else {
-                    console.log(response);
-                }
-
-            } catch (error) {
-                // console.error("Error downloading image:", error);
-                console.error('No more images.');
+            let filename = await getImageFile(url, directory);
+            if (filename === '') {
                 break;
+            }
+            else {
+                images.push(filename);
             }
         }
 
