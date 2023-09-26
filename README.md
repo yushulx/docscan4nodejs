@@ -15,9 +15,15 @@ The package provides Node.js APIs for invoking **Dynamsoft Service REST API**. I
 
 
 ## Prerequisites
--  Install [Dynamsoft Service REST Preview for Windows](https://www.dynamsoft.com/codepool/downloads/DynamsoftServiceSetup.msi).
-    
-    Currently, the REST API is only available on **Windows**. It will come to **Linux (x64, ARM64)** and **macOS** soon.
+-  Install Dynamsoft Service.
+    - Windows: [Dynamsoft-Service-Setup.msi](https://demo.dynamsoft.com/DWT/DWTResources/dist/DynamsoftServiceSetup.msi)
+    - macOS: [Dynamsoft-Service-Setup.pkg](https://demo.dynamsoft.com/DWT/DWTResources/dist/DynamsoftServiceSetup.pkg)
+    - Linux: 
+        - [Dynamsoft-Service-Setup.deb](https://demo.dynamsoft.com/DWT/DWTResources/dist/DynamsoftServiceSetup.deb)
+        - [Dynamsoft-Service-Setup-arm64.deb](https://demo.dynamsoft.com/DWT/DWTResources/dist/DynamsoftServiceSetup-arm64.deb)
+        - [Dynamsoft-Service-Setup-mips64el.deb](https://demo.dynamsoft.com/DWT/DWTResources/dist/DynamsoftServiceSetup-mips64el.deb)
+        - [Dynamsoft-Service-Setup.rpm](https://demo.dynamsoft.com/DWT/DWTResources/dist/DynamsoftServiceSetup.rpm)
+
 - Request a [free trial license](https://www.dynamsoft.com/customer/license/trialLicense?product=dwt) for Dynamsoft Service.
 
 ## Dynamsoft Service Configuration
