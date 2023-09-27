@@ -30,7 +30,6 @@ io.on('connection', (socket) => {
         let json = JSON.parse(message);
         if (json) {
             if (json['scan']) {
-                console.log('device: ' + json['scan']);
                 let parameters = {
                     license: "LICENSE-KEY",
                     device: json['scan'],
@@ -56,13 +55,13 @@ io.on('connection', (socket) => {
                             try {
                                 const passThrough = new PassThrough();
                                 const chunks = [];
-    
+
                                 streams[i].pipe(passThrough);
-    
+
                                 passThrough.on('data', (chunk) => {
                                     chunks.push(chunk);
                                 });
-    
+
                                 passThrough.on('end', () => {
                                     const buffer = Buffer.concat(chunks);
                                     socket.emit('image', buffer);

@@ -45,7 +45,7 @@ function askQuestion() {
                 } else {
                     if (index < 0 || index >= devices.length) {
                         console.log("It is out of range.");
-                        
+
                         askQuestion();
                     } else {
                         let parameters = {
@@ -71,7 +71,7 @@ function askQuestion() {
                                     for (let i = 0; i < images.length; i++) {
                                         console.log('Image ' + i + ': ' + images[i]);
                                     }
-                                    await docscan4nodejs.deleteJob(jobId);
+                                    await docscan4nodejs.deleteJob(host, jobId);
                                     askQuestion();
                                 })();
                             }
