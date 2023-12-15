@@ -96,8 +96,8 @@ module.exports = {
         return [];
     },
     // Create a scan job by feeding one or multiple physical documents
-    scanDocument: async function (host, parameters) {
-        let url = host + '/DWTAPI/ScanJobs';
+    scanDocument: async function (host, parameters, timeout = 30) {
+        let url = host + '/DWTAPI/ScanJobs?timeout=' + timeout;
 
         try {
             let response = await axios.post(url, parameters)
