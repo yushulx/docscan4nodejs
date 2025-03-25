@@ -59,7 +59,16 @@ function request(options) {
             });
         });
 
-        req.on('error', reject);
+        req.on('error', (err) => {
+            if (err.code === 'ECONNRESET') {
+                console.error('ECONNRESET!!!', {
+                    url: options.url,
+                    retryCount: options.retryCount || 0
+                });
+            }
+            reject(err);
+        });
+
         if (options.body) {
             req.write(typeof options.body === 'string'
                 ? options.body
@@ -69,10 +78,26 @@ function request(options) {
     });
 }
 
+// Get server version information
+async function getServerInfo(host) {
+    try {
+        const response = await request({
+            url: `${host}/api/server/version`,
+            method: 'GET',
+            json: true
+        });
+        return response.data;
+    } catch (error) {
+        return {
+            version: error.message,
+            compatible: false
+        };
+    }
+}
+
 // Fetch single image file and save to directory
 async function getImageFile(host, jobId, directory) {
-    const url = `${host}/DWTAPI/ScanJobs/${jobId}/NextDocument`;
-
+    const url = `${host}/api/device/scanners/jobs/${jobId}/next-page`;
     try {
         const response = await request({
             url,
@@ -120,7 +145,7 @@ async function getImageFile(host, jobId, directory) {
 
 // Fetch single image stream
 async function getImageStream(host, jobId) {
-    const url = `${host}/DWTAPI/ScanJobs/${jobId}/NextDocument`;
+    const url = `${host}/api/device/scanners/jobs/${jobId}/next-page`;
 
     try {
         const response = await request({
@@ -138,93 +163,99 @@ async function getImageStream(host, jobId) {
     return null;
 }
 
+// Get available scanning devices
+async function getDevices(host, scannerType) {
+    let url = `${host}/api/device/scanners`;
+    if (scannerType != null) url += `?type=${scannerType}`;
+
+    try {
+        const response = await request({
+            url,
+            json: true
+        });
+
+        if (response.data.length > 0) {
+            console.log('Available scanners:', response.data.length);
+            return response.data;
+        }
+    } catch (error) {
+        console.error('Device discovery failed:', error.message);
+    }
+    return [];
+}
+
+// Create new scan job
+async function scanDocument(host, parameters) {
+    const url = `${host}/api/device/scanners/jobs`;
+
+    try {
+        const response = await request({
+            url,
+            method: 'POST',
+            headers: {
+                'X-DICS-LICENSE-KEY': parameters.license,
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(JSON.stringify(parameters))
+            },
+            body: parameters
+        });
+
+        return response.status === 201 ? response.data : '';
+    } catch (error) {
+        console.error('Scan job creation failed:', error.message);
+        return '';
+    }
+}
+
+// Delete existing scan job
+async function deleteJob(host, jobId) {
+    if (!jobId) return;
+
+    const url = `${host}/api/device/scanners/jobs/${jobId}`;
+    try {
+        await request({
+            url,
+            method: 'DELETE'
+        });
+    } catch (error) {
+        console.error('Job deletion failed:', error.message);
+    }
+}
+
+// Get multiple image files
+async function getImageFiles(host, jobId, directory) {
+    const images = [];
+    console.log('Starting image download...');
+
+    while (true) {
+        const filename = await getImageFile(host, jobId, directory);
+        if (!filename) break;
+        images.push(filename);
+    }
+    return images;
+}
+
+// Get multiple image streams
+async function getImageStreams(host, jobId) {
+    const streams = [];
+    console.log('Starting stream collection...');
+
+    while (true) {
+        const stream = await getImageStream(host, jobId);
+        if (!stream) break;
+        streams.push(stream);
+    }
+    return streams;
+}
+
 module.exports = {
-    // Get available scanning devices
-    getDevices: async function (host, scannerType) {
-        let url = `${host}/DWTAPI/Scanners`;
-        if (scannerType != null) url += `?type=${scannerType}`;
-
-        try {
-            const response = await request({
-                url,
-                json: true
-            });
-
-            if (response.data.length > 0) {
-                console.log('Available scanners:', response.data.length);
-                return response.data;
-            }
-        } catch (error) {
-            console.error('Device discovery failed:', error.message);
-        }
-        return [];
-    },
-
-    // Create new scan job
-    scanDocument: async function (host, parameters, timeout = 30) {
-        const url = `${host}/DWTAPI/ScanJobs?timeout=${timeout}`;
-
-        try {
-            const response = await request({
-                url,
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Content-Length': Buffer.byteLength(JSON.stringify(parameters))
-                },
-                body: parameters
-            });
-
-            return response.status === 201 ? response.data : '';
-        } catch (error) {
-            console.error('Scan job creation failed:', error.message);
-            return '';
-        }
-    },
-
-    // Delete existing scan job
-    deleteJob: async function (host, jobId) {
-        if (!jobId) return;
-
-        const url = `${host}/DWTAPI/ScanJobs/${jobId}`;
-        try {
-            await request({
-                url,
-                method: 'DELETE'
-            });
-        } catch (error) {
-            console.error('Job deletion failed:', error.message);
-        }
-    },
-
+    getDevices,
+    scanDocument,
+    deleteJob,
     getImageFile,
     getImageStream,
-
-    // Get multiple image files
-    getImageFiles: async function (host, jobId, directory) {
-        const images = [];
-        console.log('Starting image download...');
-
-        while (true) {
-            const filename = await getImageFile(host, jobId, directory);
-            if (!filename) break;
-            images.push(filename);
-        }
-        return images;
-    },
-
-    // Get multiple image streams
-    getImageStreams: async function (host, jobId) {
-        const streams = [];
-        console.log('Starting stream collection...');
-
-        while (true) {
-            const stream = await getImageStream(host, jobId);
-            if (!stream) break;
-            streams.push(stream);
-        }
-        return streams;
-    },
-
-    ScannerType
+    getImageFiles,
+    getImageStreams,
+    ScannerType,
+    getServerInfo
 };

@@ -2,8 +2,11 @@ const docscan4nodejs = require("../../index.js")
 const readline = require('readline');
 
 let devices = [];
-// let host = 'http://192.168.8.119:18622';
 let host = 'http://127.0.0.1:18622';
+
+docscan4nodejs.getServerInfo(host).then((info) => {
+    console.log('Server info:', info);
+});
 
 const questions = `
 Please select an operation:
@@ -63,19 +66,22 @@ function askQuestion() {
                             IfDuplexEnabled: false,
                         };
 
-                        docscan4nodejs.scanDocument(host, parameters).then((jobId) => {
-                            if (jobId !== '') {
-                                console.log('job id: ' + jobId);
+                        docscan4nodejs.scanDocument(host, parameters).then((job) => {
+                            try {
+                                let json = JSON.parse(job);
+                                let jobid = json.jobuid;
                                 (async () => {
-                                    let images = await docscan4nodejs.getImageFiles(host, jobId, './');
+                                    let images = await docscan4nodejs.getImageFiles(host, jobid, './');
                                     for (let i = 0; i < images.length; i++) {
                                         console.log('Image ' + i + ': ' + images[i]);
                                     }
-                                    // await docscan4nodejs.deleteJob(host, jobId);
+                                    await docscan4nodejs.deleteJob(host, jobid);
                                     askQuestion();
                                 })();
                             }
-
+                            catch (error) {
+                                console.error('Job creation failed:', error.message);
+                            }
                         });
                     }
                 }
