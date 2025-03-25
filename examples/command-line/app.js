@@ -49,7 +49,7 @@ function askQuestion() {
                         askQuestion();
                     } else {
                         let parameters = {
-                            license: "LICENSE-KEY",
+                            license: "DLS2eyJoYW5kc2hha2VDb2RlIjoiMjAwMDAxLTE2NDk4Mjk3OTI2MzUiLCJvcmdhbml6YXRpb25JRCI6IjIwMDAwMSIsInNlc3Npb25QYXNzd29yZCI6IndTcGR6Vm05WDJrcEQ5YUoifQ==",
                             device: devices[index].device,
                         };
 
@@ -71,7 +71,7 @@ function askQuestion() {
                                     for (let i = 0; i < images.length; i++) {
                                         console.log('Image ' + i + ': ' + images[i]);
                                     }
-                                    await docscan4nodejs.deleteJob(host, jobId);
+                                    // await docscan4nodejs.deleteJob(host, jobId);
                                     askQuestion();
                                 })();
                             }

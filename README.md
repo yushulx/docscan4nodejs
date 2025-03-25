@@ -1,21 +1,20 @@
-# docscan4nodejs
-The package provides Node.js APIs for invoking **Dynamsoft Service REST API**. It helps developers to create **desktop** or **server-side** document scanning applications with ease. 
+# Document Scanner SDK for Node.js
+The package provides Node.js APIs for invoking **Dynamic Web TWAIN Service REST API**. It helps developers to create **desktop** or **server-side** document scanning applications with ease. 
 
-## Supported Scanner Drivers
-- TWAIN
-- WIA
-- SANE
-- ICA
-- eSCL
-
-## Supported Platforms
-- Windows
-- Linux
-- macOS
-
+## Key Features
+- 🖨️ ​Multi-driver Support
+    - TWAIN (32-bit & 64-bit)
+    - WIA (Windows Image Acquisition)
+    - SANE (Scanner Access Now Easy)
+    - ICA (Image Capture Architecture)
+    - eSCL (AirScan/Mopria)
+- 🌐 ​Cross-platform Compatibility
+    - Windows 7+
+    - Linux (x64/ARM64/MIPS64)
+    - macOS 10.15+
 
 ## Prerequisites
--  Install Dynamsoft Service.
+-  Install Dynamic Web TWAIN Service.
     - Windows: [Dynamsoft-Service-Setup.msi](https://demo.dynamsoft.com/DWT/DWTResources/dist/DynamsoftServiceSetup.msi)
     - macOS: [Dynamsoft-Service-Setup.pkg](https://demo.dynamsoft.com/DWT/DWTResources/dist/DynamsoftServiceSetup.pkg)
     - Linux: 
@@ -24,10 +23,10 @@ The package provides Node.js APIs for invoking **Dynamsoft Service REST API**. I
         - [Dynamsoft-Service-Setup-mips64el.deb](https://demo.dynamsoft.com/DWT/DWTResources/dist/DynamsoftServiceSetup-mips64el.deb)
         - [Dynamsoft-Service-Setup.rpm](https://demo.dynamsoft.com/DWT/DWTResources/dist/DynamsoftServiceSetup.rpm)
 
-- Request a [free trial license](https://www.dynamsoft.com/customer/license/trialLicense?product=dwt) for Dynamsoft Service.
+- Request a [free trial license](https://www.dynamsoft.com/customer/license/trialLicense?product=dwt) for Dynamic Web TWAIN Service.
 
-## Dynamsoft Service Configuration
-After installing the Dynamsoft Service, navigate to `http://127.0.0.1:18625/` in a web browser to configure the host and port settings. The default host IP address is set to 127.0.0.1. If you wish to make the service accessible over the local network in your office or company, you can update the host setting to a LAN IP address, such as **192.168.8.72**.
+## Dynamic Web TWAIN Service Configuration
+After installing the Dynamic Web TWAIN Service, navigate to `http://127.0.0.1:18625/` in a web browser to configure the host and port settings. The default host IP address is set to `127.0.0.1`. If you wish to make the service accessible over the local network in your office or company, you can update the host setting to a LAN IP address, such as **192.168.8.72**.
 
 ![dynamsoft-service-config](https://github.com/yushulx/dynamsoft-service-REST-API/assets/2202306/e2b1292e-dfbd-4821-bf41-70e2847dd51e)
 

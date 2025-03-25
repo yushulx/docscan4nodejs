@@ -1,189 +1,230 @@
-const axios = require('axios');
+const http = require('http');
+const https = require('https');
+const { URL } = require('url');
 const fs = require('fs');
 const path = require('path');
 
 const ScannerType = {
-    // TWAIN scanner type, represented by the value 0x10
     TWAINSCANNER: 0x10,
-
-    // WIA scanner type, represented by the value 0x20
     WIASCANNER: 0x20,
-
-    // 64-bit TWAIN scanner type, represented by the value 0x40
     TWAINX64SCANNER: 0x40,
-
-    // ICA scanner type, represented by the value 0x80
     ICASCANNER: 0x80,
-
-    // SANE scanner type, represented by the value 0x100
     SANESCANNER: 0x100,
-
-    // eSCL scanner type, represented by the value 0x200
     ESCLSCANNER: 0x200,
-
-    // WiFi Direct scanner type, represented by the value 0x400
     WIFIDIRECTSCANNER: 0x400,
-
-    // WIA-TWAIN scanner type, represented by the value 0x800
     WIATWAINSCANNER: 0x800
 };
 
-async function getImageFile(host, jobId, directory) {
-    let url = host + '/DWTAPI/ScanJobs/' + jobId + '/NextDocument';
-    try {
-        const response = await axios({
-            method: 'GET',
-            url: url,
-            responseType: 'stream',
+// Unified HTTP/HTTPS request handler
+function request(options) {
+    return new Promise((resolve, reject) => {
+        const url = new URL(options.url);
+        const protocol = url.protocol === 'https:' ? https : http;
+
+        const reqOptions = {
+            hostname: url.hostname,
+            port: url.port || (protocol === https ? 443 : 80),
+            path: url.pathname + url.search,
+            method: options.method || 'GET',
+            headers: options.headers || {}
+        };
+
+        const req = protocol.request(reqOptions, (res) => {
+            // Handle stream response directly
+            if (options.stream) {
+                resolve({
+                    status: res.statusCode,
+                    headers: res.headers,
+                    stream: res
+                });
+                return;
+            }
+
+            // Handle buffered response
+            const chunks = [];
+            res.on('data', (chunk) => chunks.push(chunk));
+            res.on('end', () => {
+                const body = Buffer.concat(chunks);
+                try {
+                    resolve({
+                        status: res.statusCode,
+                        data: options.json ? JSON.parse(body.toString()) : body.toString()
+                    });
+                } catch (e) {
+                    resolve({
+                        status: res.statusCode,
+                        data: body.toString()
+                    });
+                }
+            });
         });
 
-        if (response.status == 200) {
-            let filename = await new Promise((resolve, reject) => {
-                const timestamp = Date.now();
-                const filename = `image_${timestamp}.jpg`;
+        req.on('error', reject);
+        if (options.body) {
+            req.write(typeof options.body === 'string'
+                ? options.body
+                : JSON.stringify(options.body));
+        }
+        req.end();
+    });
+}
+
+// Fetch single image file and save to directory
+async function getImageFile(host, jobId, directory) {
+    const url = `${host}/DWTAPI/ScanJobs/${jobId}/NextDocument`;
+
+    try {
+        const response = await request({
+            url,
+            method: 'GET',
+            stream: true
+        });
+
+        if (response.status === 200) {
+            return new Promise((resolve, reject) => {
+                const filename = `image_${Date.now()}.jpg`;
                 const imagePath = path.join(directory, filename);
                 const writer = fs.createWriteStream(imagePath);
-                response.data.pipe(writer);
+
+                // Pipe response stream to file
+                response.stream.pipe(writer);
+
+                // Handle successful write
                 writer.on('finish', () => {
-                    console.log('Saved image to ' + imagePath + '\n');
+                    console.log('Saved image to', imagePath);
                     resolve(filename);
                 });
 
-                writer.on('error', (err) => {
-                    console.log(err);
+                // Handle errors
+                const handleError = (err) => {
+                    writer.destroy();
                     reject(err);
-                });
-            });
-            return filename;
-        }
-        else {
-            console.log(response);
-        }
+                };
 
+                writer.on('error', handleError);
+                response.stream.on('error', handleError);
+
+                // Handle timeout (30 seconds)
+                const timeout = setTimeout(() => {
+                    handleError(new Error('Download timeout'));
+                }, 30000);
+
+                writer.on('close', () => clearTimeout(timeout));
+            });
+        }
     } catch (error) {
-        // console.error("Error downloading image:", error);
-        console.error('No more images.');
+        console.error('Image download failed:', error.message);
         return '';
     }
+}
 
-    return '';
+// Fetch single image stream
+async function getImageStream(host, jobId) {
+    const url = `${host}/DWTAPI/ScanJobs/${jobId}/NextDocument`;
+
+    try {
+        const response = await request({
+            url,
+            method: 'GET',
+            stream: true
+        });
+
+        if (response.status === 200) {
+            return response.stream;
+        }
+    } catch (error) {
+        console.error('Stream fetch failed:', error.message);
+    }
+    return null;
 }
 
 module.exports = {
-    // Get available scanners
+    // Get available scanning devices
     getDevices: async function (host, scannerType) {
-        devices = [];
-        // Device type: https://www.dynamsoft.com/web-twain/docs/info/api/Dynamsoft_Enum.html
-        // http://127.0.0.1:18622/DWTAPI/Scanners?type=64 for TWAIN only
-        let url = host + '/DWTAPI/Scanners'
-        if (scannerType != null) {
-            url += '?type=' + scannerType;
-        }
+        let url = `${host}/DWTAPI/Scanners`;
+        if (scannerType != null) url += `?type=${scannerType}`;
 
         try {
-            let response = await axios.get(url)
-                .catch(error => {
-                    console.log(error);
-                });
+            const response = await request({
+                url,
+                json: true
+            });
 
-            if (response.status == 200 && response.data.length > 0) {
-                console.log('\nAvailable scanners: ' + response.data.length);
+            if (response.data.length > 0) {
+                console.log('Available scanners:', response.data.length);
                 return response.data;
             }
         } catch (error) {
-            console.log(error);
+            console.error('Device discovery failed:', error.message);
         }
         return [];
     },
-    // Create a scan job by feeding one or multiple physical documents
+
+    // Create new scan job
     scanDocument: async function (host, parameters, timeout = 30) {
-        let url = host + '/DWTAPI/ScanJobs?timeout=' + timeout;
+        const url = `${host}/DWTAPI/ScanJobs?timeout=${timeout}`;
 
         try {
-            let response = await axios.post(url, parameters)
-                .catch(error => {
-                    console.log('Error: ' + error);
-                });
+            const response = await request({
+                url,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Content-Length': Buffer.byteLength(JSON.stringify(parameters))
+                },
+                body: parameters
+            });
 
-            let jobId = response.data;
-
-            if (response.status == 201) {
-                return jobId;
-            }
-            else {
-                console.log(response);
-            }
+            return response.status === 201 ? response.data : '';
+        } catch (error) {
+            console.error('Scan job creation failed:', error.message);
+            return '';
         }
-        catch (error) {
-            console.log(error);
-        }
-
-
-        return '';
     },
-    // Delete a scan job by job id
+
+    // Delete existing scan job
     deleteJob: async function (host, jobId) {
         if (!jobId) return;
 
-        let url = host + '/DWTAPI/ScanJobs/' + jobId;
-        console.log('Delete job: ' + url);
-        axios({
-            method: 'DELETE',
-            url: url
-        })
-            .then(response => {
-                // console.log('Status:', response.status);
-            })
-            .catch(error => {
-                // console.log('Error:', error);
+        const url = `${host}/DWTAPI/ScanJobs/${jobId}`;
+        try {
+            await request({
+                url,
+                method: 'DELETE'
             });
-    },
-    // Get one document image file by job id
-    getImageFile: getImageFile,
-    // Get document image files by job id
-    getImageFiles: async function (host, jobId, directory) {
-        let images = [];
-        console.log('Start downloading images......');
-        while (true) {
-            let filename = await getImageFile(host, jobId, directory);
-            if (filename === '') {
-                break;
-            }
-            else {
-                images.push(filename);
-            }
+        } catch (error) {
+            console.error('Job deletion failed:', error.message);
         }
+    },
 
+    getImageFile,
+    getImageStream,
+
+    // Get multiple image files
+    getImageFiles: async function (host, jobId, directory) {
+        const images = [];
+        console.log('Starting image download...');
+
+        while (true) {
+            const filename = await getImageFile(host, jobId, directory);
+            if (!filename) break;
+            images.push(filename);
+        }
         return images;
     },
-    // Get document image streams by job id
+
+    // Get multiple image streams
     getImageStreams: async function (host, jobId) {
-        let streams = [];
-        let url = host + '/DWTAPI/ScanJobs/' + jobId + '/NextDocument';
-        console.log('Start downloading images......');
+        const streams = [];
+        console.log('Starting stream collection...');
+
         while (true) {
-            try {
-                const response = await axios({
-                    method: 'GET',
-                    url: url,
-                    responseType: 'stream',
-                });
-
-                if (response.status == 200) {
-                    streams.push(response.data);
-                }
-                else {
-                    console.log(response);
-                }
-
-            } catch (error) {
-                // console.error("Error downloading image:", error);
-                console.error('No more images.');
-                break;
-            }
+            const stream = await getImageStream(host, jobId);
+            if (!stream) break;
+            streams.push(stream);
         }
-
         return streams;
     },
-    ScannerType: ScannerType
+
+    ScannerType
 };

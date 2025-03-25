@@ -24,7 +24,7 @@ app.post('/scandocument', async (req, res) => {
     const json = req.body;
 
     let parameters = {
-        license: "LICENSE-KEY",
+        license: "DLS2eyJoYW5kc2hha2VDb2RlIjoiMjAwMDAxLTE2NDk4Mjk3OTI2MzUiLCJvcmdhbml6YXRpb25JRCI6IjIwMDAwMSIsInNlc3Npb25QYXNzd29yZCI6IndTcGR6Vm05WDJrcEQ5YUoifQ==",
         device: json['scan'],
     };
 
