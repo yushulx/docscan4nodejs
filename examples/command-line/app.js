@@ -54,7 +54,7 @@ function askQuestion() {
                         let parameters = {
                             license: "DLS2eyJoYW5kc2hha2VDb2RlIjoiMjAwMDAxLTE2NDk4Mjk3OTI2MzUiLCJvcmdhbml6YXRpb25JRCI6IjIwMDAwMSIsInNlc3Npb25QYXNzd29yZCI6IndTcGR6Vm05WDJrcEQ5YUoifQ==",
                             device: devices[index].device,
-                            autoRun: false
+                            autoRun: true
                         };
 
                         parameters.config = {
@@ -73,21 +73,38 @@ function askQuestion() {
                                 let jobId = json.jobuid;
 
                                 (async () => {
-                                    let status = await docscan4nodejs.checkJob(host, jobId);
-                                    console.log('Job status:', status);
+                                    // let status = await docscan4nodejs.checkJob(host, jobId);
+                                    // console.log('Job status:', status);
 
-                                    let caps = await docscan4nodejs.getScannerCapabilities(host, jobId);
-                                    console.log('Capabilities:', caps);
+                                    // let caps = await docscan4nodejs.getScannerCapabilities(host, jobId);
+                                    // console.log('Capabilities:', caps);
 
-                                    let updateStatus = await docscan4nodejs.updateJob(host, jobId, {
-                                        status: docscan4nodejs.JobStatus.RUNNING
-                                    });
-                                    console.log('Update status:', updateStatus);
+                                    // let updateStatus = await docscan4nodejs.updateJob(host, jobId, {
+                                    //     status: docscan4nodejs.JobStatus.RUNNING
+                                    // });
+                                    // console.log('Update status:', updateStatus);
+
+
 
                                     let images = await docscan4nodejs.getImageFiles(host, jobId, './');
                                     for (let i = 0; i < images.length; i++) {
                                         console.log('Image ' + i + ': ' + images[i]);
                                     }
+
+                                    let info = await docscan4nodejs.getImageInfo(host, jobId);
+                                    console.log('Image info:', info);
+
+                                    let doc = await docscan4nodejs.createDocument(host, {});
+                                    docObj = JSON.parse(doc);
+                                    console.log('Document:', doc);
+
+                                    let docinfo = await docscan4nodejs.getDocumentInfo(host, docObj.uid);
+                                    console.log('Document info:', docinfo);
+
+
+                                    let deleteDoc = await docscan4nodejs.deleteDocument(host, docObj.uid);
+                                    console.log('Delete document:', deleteDoc);
+
                                     await docscan4nodejs.deleteJob(host, jobId);
                                     askQuestion();
                                 })();

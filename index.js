@@ -272,6 +272,7 @@ async function updateJob(host, jobId, parameters) {
     }
 }
 
+// Get scanner capabilities
 async function getScannerCapabilities(host, jobId) {
     const url = `${host}/api/device/scanners/jobs/${jobId}/scanner/capabilities`;
 
@@ -306,7 +307,6 @@ async function getImageFiles(host, jobId, directory) {
 // Get multiple image streams
 async function getImageStreams(host, jobId) {
     const streams = [];
-    console.log('Starting stream collection...');
 
     while (true) {
         const stream = await getImageStream(host, jobId);
@@ -314,6 +314,98 @@ async function getImageStreams(host, jobId) {
         streams.push(stream);
     }
     return streams;
+}
+
+// Get image information
+async function getImageInfo(host, jobId) {
+    const url = `${host}/api/device/scanners/jobs/${jobId}/next-page-info`;
+
+    try {
+        const response = await request({
+            url,
+            method: 'GET',
+            json: true
+        });
+
+        return response.status === 200 ? response.data : '';
+    } catch (error) {
+        console.error('Image info fetch failed:', error.message);
+        return '';
+    }
+}
+
+////////////////////////
+// Document functions
+
+// Create a new document
+async function createDocument(host, parameters) {
+    const url = `${host}/api/storage/documents`;
+
+    try {
+        const response = await request({
+            url,
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(JSON.stringify(parameters))
+            },
+            body: parameters
+        });
+        console.log('Document created:', response);
+        return response.status === 201 ? response.data : '';
+    }
+    catch (error) {
+        console.error('Document creation failed:', error.message);
+        return '';
+    }
+}
+
+// Get document information
+async function getDocumentInfo(host, docId) {
+    const url = `${host}/api/storage/documents/${docId}`;
+
+    try {
+        const response = await request({
+            url,
+            method: 'GET',
+            json: true
+        });
+
+        return response.status === 200 ? response.data : '';
+    }
+    catch (error) {
+        console.error('Document info fetch failed:', error.message);
+        return '';
+    }
+}
+
+// Delete existing document
+async function deleteDocument(host, docId) {
+    const url = `${host}/api/storage/documents/${docId}`;
+
+    try {
+        const response = await request({
+            url,
+            method: 'DELETE'
+        });
+
+        return response.status === 204 ? 'Document deleted' : '';
+    }
+    catch (error) {
+        console.error('Document deletion failed:', error.message);
+    }
+}
+
+async function getDocument(host, docId) {
+    const url = `${host}/api/storage/documents/${docId}/content`;
+}
+
+async function insertPage(host, docId, parameters) {
+    const url = `${host}/api/storage/documents/${docId}/pages`;
+}
+
+async function deletePage(host, docId, pageId) {
+    const url = `${host}/api/storage/documents/${docId}/pages/${pageId}`;
 }
 
 module.exports = {
@@ -329,5 +421,12 @@ module.exports = {
     getImageStream,
     getImageFiles,
     getImageStreams,
-    getScannerCapabilities
+    getScannerCapabilities,
+    getImageInfo,
+    createDocument,
+    getDocumentInfo,
+    deleteDocument,
+    getDocument,
+    insertPage,
+    deletePage
 };
