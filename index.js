@@ -205,8 +205,12 @@ async function createJob(host, parameters) {
             },
             body: parameters
         });
+        if (response.status !== 201) {
+            console.log('Job created:', response);
 
-        return response.status === 201 ? response.data : '';
+        }
+
+        return response.data;
     } catch (error) {
         console.error('Scan job creation failed:', error.message);
         return '';
