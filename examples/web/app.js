@@ -45,9 +45,12 @@ io.on('connection', (socket) => {
                     IfDuplexEnabled: false,
                 };
 
-                let job = await docscan4nodejs.scanDocument(host, parameters);
+                let job = await docscan4nodejs.createJob(host, parameters);
                 let json = JSON.parse(job);
                 let jobId = json.jobuid;
+
+                let status = await docscan4nodejs.checkJob(host, jobId);
+                console.log('Job status:', status);
 
                 let streams = await docscan4nodejs.getImageStreams(host, jobId);
                 for (let i = 0; i < streams.length; i++) {

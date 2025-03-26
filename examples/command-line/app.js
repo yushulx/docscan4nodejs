@@ -54,6 +54,7 @@ function askQuestion() {
                         let parameters = {
                             license: "DLS2eyJoYW5kc2hha2VDb2RlIjoiMjAwMDAxLTE2NDk4Mjk3OTI2MzUiLCJvcmdhbml6YXRpb25JRCI6IjIwMDAwMSIsInNlc3Npb25QYXNzd29yZCI6IndTcGR6Vm05WDJrcEQ5YUoifQ==",
                             device: devices[index].device,
+                            autoRun: false
                         };
 
                         parameters.config = {
@@ -66,21 +67,34 @@ function askQuestion() {
                             IfDuplexEnabled: false,
                         };
 
-                        docscan4nodejs.scanDocument(host, parameters).then((job) => {
+                        docscan4nodejs.createJob(host, parameters).then((job) => {
                             try {
                                 let json = JSON.parse(job);
-                                let jobid = json.jobuid;
+                                let jobId = json.jobuid;
+
                                 (async () => {
-                                    let images = await docscan4nodejs.getImageFiles(host, jobid, './');
+                                    let status = await docscan4nodejs.checkJob(host, jobId);
+                                    console.log('Job status:', status);
+
+                                    let caps = await docscan4nodejs.getScannerCapabilities(host, jobId);
+                                    console.log('Capabilities:', caps);
+
+                                    let updateStatus = await docscan4nodejs.updateJob(host, jobId, {
+                                        status: docscan4nodejs.JobStatus.RUNNING
+                                    });
+                                    console.log('Update status:', updateStatus);
+
+                                    let images = await docscan4nodejs.getImageFiles(host, jobId, './');
                                     for (let i = 0; i < images.length; i++) {
                                         console.log('Image ' + i + ': ' + images[i]);
                                     }
-                                    await docscan4nodejs.deleteJob(host, jobid);
+                                    await docscan4nodejs.deleteJob(host, jobId);
                                     askQuestion();
                                 })();
                             }
                             catch (error) {
                                 console.error('Job creation failed:', error.message);
+                                askQuestion();
                             }
                         });
                     }

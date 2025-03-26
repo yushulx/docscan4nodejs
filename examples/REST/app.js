@@ -20,7 +20,7 @@ app.get('/devices', (req, res) => {
     });
 });
 
-app.post('/scandocument', async (req, res) => {
+app.post('/createJob', async (req, res) => {
     const data = req.body;
 
     let parameters = {
@@ -38,7 +38,7 @@ app.post('/scandocument', async (req, res) => {
         IfDuplexEnabled: false,
     };
 
-    let job = await docscan4nodejs.scanDocument(dynamsoftService, parameters);
+    let job = await docscan4nodejs.createJob(dynamsoftService, parameters);
     let json = JSON.parse(job);
     let jobId = json.jobuid;
     let filename = await docscan4nodejs.getImageFile(dynamsoftService, jobId, './public');

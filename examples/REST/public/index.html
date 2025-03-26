@@ -62,7 +62,7 @@
 
             async function acquireImage() {
                 if (devices.length > 0 && selectSources.selectedIndex >= 0) {
-                    const response = await fetch('/scandocument', {
+                    const response = await fetch('/createJob', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'

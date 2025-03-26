@@ -15,6 +15,11 @@ const ScannerType = {
     WIATWAINSCANNER: 0x800
 };
 
+const JobStatus = {
+    RUNNING: 'running',
+    CANCELED: 'canceled',
+};
+
 // Unified HTTP/HTTPS request handler
 function request(options) {
     return new Promise((resolve, reject) => {
@@ -171,6 +176,7 @@ async function getDevices(host, scannerType) {
     try {
         const response = await request({
             url,
+            method: 'GET',
             json: true
         });
 
@@ -185,7 +191,7 @@ async function getDevices(host, scannerType) {
 }
 
 // Create new scan job
-async function scanDocument(host, parameters) {
+async function createJob(host, parameters) {
     const url = `${host}/api/device/scanners/jobs`;
 
     try {
@@ -207,6 +213,24 @@ async function scanDocument(host, parameters) {
     }
 }
 
+// Retrive the job status
+async function checkJob(host, jobId) {
+    const url = `${host}/api/device/scanners/jobs/${jobId}`;
+
+    try {
+        const response = await request({
+            url,
+            method: 'GET',
+            json: true
+        });
+
+        return response.status === 200 ? response.data : '';
+    } catch (error) {
+        console.error('Scan job creation failed:', error.message);
+        return '';
+    }
+}
+
 // Delete existing scan job
 async function deleteJob(host, jobId) {
     if (!jobId) return;
@@ -219,6 +243,46 @@ async function deleteJob(host, jobId) {
         });
     } catch (error) {
         console.error('Job deletion failed:', error.message);
+    }
+}
+
+// Update existing scan job status (e.g. 'running', canceled)
+async function updateJob(host, jobId, parameters) {
+    const url = `${host}/api/device/scanners/jobs/${jobId}`;
+
+    try {
+        const response = await request({
+            url,
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(JSON.stringify(parameters))
+            },
+            body: parameters
+        });
+
+        return response.status === 200 ? response.data : '';
+    } catch (error) {
+        console.error('Scan job creation failed:', error.message);
+        return '';
+    }
+}
+
+async function getScannerCapabilities(host, jobId) {
+    const url = `${host}/api/device/scanners/jobs/${jobId}/scanner/capabilities`;
+
+    try {
+        const response = await request({
+            url,
+            method: 'GET',
+            json: true
+        });
+
+        return response.status === 200 ? response.data : '';
+    }
+    catch (error) {
+        console.error('Scan job creation failed:', error.message);
+        return '';
     }
 }
 
@@ -249,13 +313,17 @@ async function getImageStreams(host, jobId) {
 }
 
 module.exports = {
+    ScannerType,
+    JobStatus,
+    getServerInfo,
     getDevices,
-    scanDocument,
+    createJob,
     deleteJob,
+    updateJob,
+    checkJob,
     getImageFile,
     getImageStream,
     getImageFiles,
     getImageStreams,
-    ScannerType,
-    getServerInfo
+    getScannerCapabilities
 };
