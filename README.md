@@ -51,20 +51,7 @@ After installation, open `http://127.0.0.1:18625/` in your browser to configure 
 
 ## 📡 REST API Endpoints
 
-Default host: `http://127.0.0.1:18622`
-
-| Method | Endpoint | Description | Parameters | Response |
-|--------|----------|-------------|------------|----------|
-| GET    | `/api/device/scanners` | List available scanners | `type` (optional) | `200 OK` |
-| POST   | `/api/device/scanners/jobs` | Create a scan job | `license`, `device`, `config` | `201 Created` |
-| GET    | `/api/device/scanners/jobs/:id/next-page` | Retrieve next image | `id`: Job ID | `200 OK` (image stream) |
-| DELETE | `/api/device/scanners/jobs/:id` | Delete a scan job | `id`: Job ID | `204 No Content` |
-| GET    | `/api/storage/documents/:id/content` | Download document PDF | `id`: Document ID | `200 OK` (PDF stream) |
-| POST   | `/api/storage/documents` | Create document | `metadata` | `201 Created` |
-| POST   | `/api/storage/documents/:id/pages` | Insert page into document | `id`, `image`, `password` | `200 OK` |
-| DELETE | `/api/storage/documents/:id/pages/:pageId` | Delete page | `id`, `pageId` | `204 No Content` |
-
----
+[https://www.dynamsoft.com/web-twain/docs/info/api/restful.html](https://www.dynamsoft.com/web-twain/docs/info/api/restful.html)
 
 ## 📦 Node.js APIs
 
