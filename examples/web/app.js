@@ -45,8 +45,7 @@ io.on('connection', (socket) => {
                     IfDuplexEnabled: false,
                 };
 
-                let job = await docscan4nodejs.createJob(host, parameters);
-                let json = JSON.parse(job);
+                let json = await docscan4nodejs.createJob(host, parameters);
                 let jobId = json.jobuid;
 
                 let status = await docscan4nodejs.checkJob(host, jobId);

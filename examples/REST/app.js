@@ -38,8 +38,7 @@ app.post('/createJob', async (req, res) => {
         IfDuplexEnabled: false,
     };
 
-    let job = await docscan4nodejs.createJob(dynamsoftService, parameters);
-    let json = JSON.parse(job);
+    let json = await docscan4nodejs.createJob(dynamsoftService, parameters);
     let jobId = json.jobuid;
     let filename = await docscan4nodejs.getImageFile(dynamsoftService, jobId, './public');
 
