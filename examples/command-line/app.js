@@ -63,14 +63,13 @@ function askQuestion() {
                             //XferCount: 1,
                             //PageSize: 1,
                             Resolution: 200,
-                            IfFeederEnabled: false,
+                            IfFeederEnabled: true,
                             IfDuplexEnabled: false,
                         };
 
                         docscan4nodejs.createJob(host, parameters).then((job) => {
                             try {
-                                let json = JSON.parse(job);
-                                let jobId = json.jobuid;
+                                let jobId = job.jobuid;
 
                                 (async () => {
                                     // let status = await docscan4nodejs.checkJob(host, jobId);
@@ -83,26 +82,30 @@ function askQuestion() {
                                     //     status: docscan4nodejs.JobStatus.RUNNING
                                     // });
                                     // console.log('Update status:', updateStatus);
-
+                                    let doc = await docscan4nodejs.createDocument(host, {});
+                                    // console.log('Document:', doc);
 
 
                                     let images = await docscan4nodejs.getImageFiles(host, jobId, './');
                                     for (let i = 0; i < images.length; i++) {
                                         console.log('Image ' + i + ': ' + images[i]);
+                                        let info = await docscan4nodejs.getImageInfo(host, jobId);
+                                        // console.log('Image info:', info);
+
+                                        let insertPage = await docscan4nodejs.insertPage(host, doc.uid, { password: '', source: info.url });
+                                        // console.log('Insert page:', insertPage);
                                     }
 
-                                    let info = await docscan4nodejs.getImageInfo(host, jobId);
-                                    console.log('Image info:', info);
 
-                                    let doc = await docscan4nodejs.createDocument(host, {});
-                                    docObj = JSON.parse(doc);
-                                    console.log('Document:', doc);
+                                    let docinfo = await docscan4nodejs.getDocumentInfo(host, doc.uid);
+                                    // console.log('Document info:', docinfo);
 
-                                    let docinfo = await docscan4nodejs.getDocumentInfo(host, docObj.uid);
-                                    console.log('Document info:', docinfo);
+                                    // let deletePage = await docscan4nodejs.deletePage(host, doc.uid, insertPage.pages[0].uid);
+                                    // console.log('Delete page:', deletePage);
+                                    let docfile = await docscan4nodejs.getDocumentFile(host, doc.uid, './');
+                                    console.log('Document file:', docfile);
 
-
-                                    let deleteDoc = await docscan4nodejs.deleteDocument(host, docObj.uid);
+                                    let deleteDoc = await docscan4nodejs.deleteDocument(host, doc.uid);
                                     console.log('Delete document:', deleteDoc);
 
                                     await docscan4nodejs.deleteJob(host, jobId);

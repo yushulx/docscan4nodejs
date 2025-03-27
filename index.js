@@ -121,7 +121,6 @@ async function getImageFile(host, jobId, directory) {
 
                 // Handle successful write
                 writer.on('finish', () => {
-                    console.log('Saved image to', imagePath);
                     resolve(filename);
                 });
 
@@ -181,7 +180,6 @@ async function getDevices(host, scannerType) {
         });
 
         if (response.data.length > 0) {
-            console.log('Available scanners:', response.data.length);
             return response.data;
         }
     } catch (error) {
@@ -203,11 +201,11 @@ async function createJob(host, parameters) {
                 'Content-Type': 'application/json',
                 'Content-Length': Buffer.byteLength(JSON.stringify(parameters))
             },
+            json: true,
             body: parameters
         });
         if (response.status !== 201) {
             console.log('Job created:', response);
-
         }
 
         return response.data;
@@ -262,6 +260,7 @@ async function updateJob(host, jobId, parameters) {
                 'Content-Type': 'application/json',
                 'Content-Length': Buffer.byteLength(JSON.stringify(parameters))
             },
+            json: true,
             body: parameters
         });
 
@@ -349,6 +348,7 @@ async function createDocument(host, parameters) {
                 'Content-Type': 'application/json',
                 'Content-Length': Buffer.byteLength(JSON.stringify(parameters))
             },
+            json: true,
             body: parameters
         });
         console.log('Document created:', response);
@@ -396,16 +396,113 @@ async function deleteDocument(host, docId) {
     }
 }
 
-async function getDocument(host, docId) {
+// Fetch document file and save to directory
+async function getDocumentFile(host, docId, directory) {
     const url = `${host}/api/storage/documents/${docId}/content`;
+
+    try {
+        const response = await request({
+            url,
+            method: 'GET',
+            stream: true
+        });
+
+        if (response.status === 200) {
+            return new Promise((resolve, reject) => {
+                const filename = `document_${Date.now()}.pdf`;
+                const imagePath = path.join(directory, filename);
+                const writer = fs.createWriteStream(imagePath);
+
+                // Pipe response stream to file
+                response.stream.pipe(writer);
+
+                // Handle successful write
+                writer.on('finish', () => {
+                    resolve(filename);
+                });
+
+                // Handle errors
+                const handleError = (err) => {
+                    writer.destroy();
+                    reject(err);
+                };
+
+                writer.on('error', handleError);
+                response.stream.on('error', handleError);
+
+                // Handle timeout (30 seconds)
+                const timeout = setTimeout(() => {
+                    handleError(new Error('Download timeout'));
+                }, 30000);
+
+                writer.on('close', () => clearTimeout(timeout));
+            });
+        }
+    }
+    catch (error) {
+        console.error('Document fetch failed:', error.message);
+    }
 }
 
+// Fetch document stream
+async function getDocumentStream(host, docId) {
+    const url = `${host}/api/storage/documents/${docId}/content`;
+
+    try {
+        const response = await request({
+            url,
+            method: 'GET',
+            stream: true
+        });
+
+        if (response.status === 200) {
+            return response.stream;
+        }
+    } catch (error) {
+        console.error('Stream fetch failed:', error.message);
+    }
+    return null;
+}
+
+// Insert a new page into an existing document
 async function insertPage(host, docId, parameters) {
     const url = `${host}/api/storage/documents/${docId}/pages`;
+
+    try {
+        const response = await request({
+            url,
+            method: 'POST',
+            headers: {
+                'X-DICS-DOC-PASSWORD': parameters.password,
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(JSON.stringify(parameters))
+            },
+            json: true,
+            body: parameters
+        });
+        return response.status === 200 ? response.data : '';
+    }
+    catch (error) {
+        console.error('Page insertion failed:', error.message);
+        return '';
+    }
 }
 
+// Delete an existing page from a document
 async function deletePage(host, docId, pageId) {
     const url = `${host}/api/storage/documents/${docId}/pages/${pageId}`;
+
+    try {
+        const response = await request({
+            url,
+            method: 'DELETE'
+        });
+
+        return response.status === 204 ? 'Page deleted' : '';
+    }
+    catch (error) {
+        console.error('Page deletion failed:', error.message);
+    }
 }
 
 module.exports = {
@@ -426,7 +523,8 @@ module.exports = {
     createDocument,
     getDocumentInfo,
     deleteDocument,
-    getDocument,
+    getDocumentFile,
+    getDocumentStream,
     insertPage,
     deletePage
 };
