@@ -27,12 +27,12 @@ io.on('connection', (socket) => {
     });
 
     socket.on('message', async (message) => {
-        let json = JSON.parse(message);
-        if (json) {
-            if (json['scan']) {
+        let data = JSON.parse(message);
+        if (data) {
+            if (data['scan']) {
                 let parameters = {
                     license: "DLS2eyJoYW5kc2hha2VDb2RlIjoiMjAwMDAxLTE2NDk4Mjk3OTI2MzUiLCJvcmdhbml6YXRpb25JRCI6IjIwMDAwMSIsInNlc3Npb25QYXNzd29yZCI6IndTcGR6Vm05WDJrcEQ5YUoifQ==",
-                    device: json['scan'],
+                    device: data['scan'],
                 };
 
                 parameters.config = {
@@ -45,34 +45,35 @@ io.on('connection', (socket) => {
                     IfDuplexEnabled: false,
                 };
 
-                let jobId = await docscan4nodejs.scanDocument(host, parameters);
+                let json = await docscan4nodejs.createJob(host, parameters);
+                let jobId = json.jobuid;
 
-                if (jobId !== '') {
-                    console.log('job id: ' + jobId);
-                    let streams = await docscan4nodejs.getImageStreams(host, jobId);
-                    for (let i = 0; i < streams.length; i++) {
-                        await new Promise((resolve, reject) => {
-                            try {
-                                const passThrough = new PassThrough();
-                                const chunks = [];
+                let status = await docscan4nodejs.checkJob(host, jobId);
+                console.log('Job status:', status);
 
-                                streams[i].pipe(passThrough);
+                let streams = await docscan4nodejs.getImageStreams(host, jobId);
+                for (let i = 0; i < streams.length; i++) {
+                    await new Promise((resolve, reject) => {
+                        try {
+                            const passThrough = new PassThrough();
+                            const chunks = [];
 
-                                passThrough.on('data', (chunk) => {
-                                    chunks.push(chunk);
-                                });
+                            streams[i].pipe(passThrough);
 
-                                passThrough.on('end', () => {
-                                    const buffer = Buffer.concat(chunks);
-                                    socket.emit('image', buffer);
-                                    resolve();
-                                });
-                            }
-                            catch (error) {
-                                reject(error);
-                            }
-                        });
-                    }
+                            passThrough.on('data', (chunk) => {
+                                chunks.push(chunk);
+                            });
+
+                            passThrough.on('end', () => {
+                                const buffer = Buffer.concat(chunks);
+                                socket.emit('image', buffer);
+                                resolve();
+                            });
+                        }
+                        catch (error) {
+                            reject(error);
+                        }
+                    });
                 }
             }
         }

@@ -20,12 +20,12 @@ app.get('/devices', (req, res) => {
     });
 });
 
-app.post('/scandocument', async (req, res) => {
-    const json = req.body;
+app.post('/createJob', async (req, res) => {
+    const data = req.body;
 
     let parameters = {
         license: "DLS2eyJoYW5kc2hha2VDb2RlIjoiMjAwMDAxLTE2NDk4Mjk3OTI2MzUiLCJvcmdhbml6YXRpb25JRCI6IjIwMDAwMSIsInNlc3Npb25QYXNzd29yZCI6IndTcGR6Vm05WDJrcEQ5YUoifQ==",
-        device: json['scan'],
+        device: data['scan'],
     };
 
     parameters.config = {
@@ -38,7 +38,8 @@ app.post('/scandocument', async (req, res) => {
         IfDuplexEnabled: false,
     };
 
-    let jobId = await docscan4nodejs.scanDocument(dynamsoftService, parameters);
+    let json = await docscan4nodejs.createJob(dynamsoftService, parameters);
+    let jobId = json.jobuid;
     let filename = await docscan4nodejs.getImageFile(dynamsoftService, jobId, './public');
 
     res.send(JSON.stringify({
