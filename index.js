@@ -197,7 +197,7 @@ async function createJob(host, parameters) {
             url,
             method: 'POST',
             headers: {
-                'X-DICS-LICENSE-KEY': parameters.license,
+                'DWT-PRODUCT-KEY': parameters.license,
                 'Content-Type': 'application/json',
                 'Content-Length': Buffer.byteLength(JSON.stringify(parameters))
             },
@@ -473,7 +473,7 @@ async function insertPage(host, docId, parameters) {
             url,
             method: 'POST',
             headers: {
-                'X-DICS-DOC-PASSWORD': parameters.password,
+                'DWT-DOC-PASSWORD': parameters.password,
                 'Content-Type': 'application/json',
                 'Content-Length': Buffer.byteLength(JSON.stringify(parameters))
             },
