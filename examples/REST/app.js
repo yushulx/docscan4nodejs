@@ -40,11 +40,20 @@ app.post('/createJob', async (req, res) => {
 
     let json = await docscan4nodejs.createJob(dynamsoftService, parameters);
     let jobId = json.jobuid;
-    let filename = await docscan4nodejs.getImageFile(dynamsoftService, jobId, './public');
+    if (jobId) {
+        let filename = await docscan4nodejs.getImageFile(dynamsoftService, jobId, './public');
+        await docscan4nodejs.deleteJob(dynamsoftService, jobId);
 
-    res.send(JSON.stringify({
-        'image': filename
-    }));
+        res.send(JSON.stringify({
+            'image': filename
+        }));
+    }
+    else {
+        res.send(JSON.stringify({
+            'error': 'Failed to create job'
+        }));
+    }
+
 });
 
 // Start the server
