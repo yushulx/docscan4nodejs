@@ -24,7 +24,7 @@ function askQuestion() {
             rl.close();
         }
         else if (answer === '1') {
-            docscan4nodejs.getDevices(host, docscan4nodejs.ScannerType.TWAINSCANNER | docscan4nodejs.ScannerType.TWAINX64SCANNER).then((scanners) => {
+            docscan4nodejs.getDevices(host, docscan4nodejs.ScannerType.TWAINSCANNER | docscan4nodejs.ScannerType.TWAINX64SCANNER | docscan4nodejs.ScannerType.WIASCANNER).then((scanners) => {
                 devices = [];
                 for (let i = 0; i < scanners.length; i++) {
                     devices.push(scanners[i]);
@@ -54,7 +54,8 @@ function askQuestion() {
                         let parameters = {
                             license: "DLS2eyJoYW5kc2hha2VDb2RlIjoiMjAwMDAxLTE2NDk4Mjk3OTI2MzUiLCJvcmdhbml6YXRpb25JRCI6IjIwMDAwMSIsInNlc3Npb25QYXNzd29yZCI6IndTcGR6Vm05WDJrcEQ5YUoifQ==",
                             device: devices[index].device,
-                            autoRun: true
+                            autoRun: true,
+                            scannerFailureTimeout: 60
                         };
 
                         parameters.config = {
@@ -63,7 +64,7 @@ function askQuestion() {
                             //XferCount: 1,
                             //PageSize: 1,
                             Resolution: 200,
-                            IfFeederEnabled: true,
+                            IfFeederEnabled: false,
                             IfDuplexEnabled: false,
                         };
 
@@ -71,46 +72,53 @@ function askQuestion() {
                             try {
                                 let jobId = job.jobuid;
 
-                                (async () => {
-                                    // let status = await docscan4nodejs.checkJob(host, jobId);
-                                    // console.log('Job status:', status);
+                                if (jobId) {
+                                    (async () => {
+                                        // let status = await docscan4nodejs.checkJob(host, jobId);
+                                        // console.log('Job status:', status);
 
-                                    // let caps = await docscan4nodejs.getScannerCapabilities(host, jobId);
-                                    // console.log('Capabilities:', caps);
+                                        // let caps = await docscan4nodejs.getScannerCapabilities(host, jobId);
+                                        // console.log('Capabilities:', caps);
 
-                                    // let updateStatus = await docscan4nodejs.updateJob(host, jobId, {
-                                    //     status: docscan4nodejs.JobStatus.RUNNING
-                                    // });
-                                    // console.log('Update status:', updateStatus);
-                                    let doc = await docscan4nodejs.createDocument(host, {});
-                                    // console.log('Document:', doc);
-
-
-                                    let images = await docscan4nodejs.getImageFiles(host, jobId, './');
-                                    for (let i = 0; i < images.length; i++) {
-                                        console.log('Image ' + i + ': ' + images[i]);
-                                        let info = await docscan4nodejs.getImageInfo(host, jobId);
-                                        // console.log('Image info:', info);
-
-                                        let insertPage = await docscan4nodejs.insertPage(host, doc.uid, { password: '', source: info.url });
-                                        // console.log('Insert page:', insertPage);
-                                    }
+                                        // let updateStatus = await docscan4nodejs.updateJob(host, jobId, {
+                                        //     status: docscan4nodejs.JobStatus.RUNNING
+                                        // });
+                                        // console.log('Update status:', updateStatus);
+                                        let doc = await docscan4nodejs.createDocument(host, {});
+                                        // console.log('Document:', doc);
 
 
-                                    let docinfo = await docscan4nodejs.getDocumentInfo(host, doc.uid);
-                                    // console.log('Document info:', docinfo);
+                                        let images = await docscan4nodejs.getImageFiles(host, jobId, './');
+                                        for (let i = 0; i < images.length; i++) {
+                                            console.log('Image ' + i + ': ' + images[i]);
+                                            let info = await docscan4nodejs.getImageInfo(host, jobId);
+                                            // console.log('Image info:', info);
 
-                                    // let deletePage = await docscan4nodejs.deletePage(host, doc.uid, insertPage.pages[0].uid);
-                                    // console.log('Delete page:', deletePage);
-                                    let docfile = await docscan4nodejs.getDocumentFile(host, doc.uid, './');
-                                    console.log('Document file:', docfile);
+                                            let insertPage = await docscan4nodejs.insertPage(host, doc.uid, { password: '', source: info.url });
+                                            // console.log('Insert page:', insertPage);
+                                        }
 
-                                    let deleteDoc = await docscan4nodejs.deleteDocument(host, doc.uid);
-                                    console.log('Delete document:', deleteDoc);
 
-                                    await docscan4nodejs.deleteJob(host, jobId);
+                                        let docinfo = await docscan4nodejs.getDocumentInfo(host, doc.uid);
+                                        // console.log('Document info:', docinfo);
+
+                                        // let deletePage = await docscan4nodejs.deletePage(host, doc.uid, insertPage.pages[0].uid);
+                                        // console.log('Delete page:', deletePage);
+                                        let docfile = await docscan4nodejs.getDocumentFile(host, doc.uid, './');
+                                        console.log('Document file:', docfile);
+
+                                        let deleteDoc = await docscan4nodejs.deleteDocument(host, doc.uid);
+                                        console.log('Delete document:', deleteDoc);
+
+                                        await docscan4nodejs.deleteJob(host, jobId);
+                                        askQuestion();
+                                    })();
+                                }
+                                else {
+                                    console.log('Job creation failed.');
                                     askQuestion();
-                                })();
+                                }
+
                             }
                             catch (error) {
                                 console.error('Job creation failed:', error.message);

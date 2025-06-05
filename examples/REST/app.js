@@ -26,14 +26,13 @@ app.post('/createJob', async (req, res) => {
     let parameters = {
         license: "DLS2eyJoYW5kc2hha2VDb2RlIjoiMjAwMDAxLTE2NDk4Mjk3OTI2MzUiLCJvcmdhbml6YXRpb25JRCI6IjIwMDAwMSIsInNlc3Npb25QYXNzd29yZCI6IndTcGR6Vm05WDJrcEQ5YUoifQ==",
         device: data['scan'],
+        scannerFailureTimeout: 60
     };
 
     parameters.config = {
         IfShowUI: false,
         PixelType: 2,
-        //XferCount: 1,
-        //PageSize: 1,
-        Resolution: 200,
+        Resolution: 100,
         IfFeederEnabled: false,
         IfDuplexEnabled: false,
     };

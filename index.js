@@ -293,7 +293,6 @@ async function getScannerCapabilities(host, jobId) {
 // Get multiple image files
 async function getImageFiles(host, jobId, directory) {
     const images = [];
-    console.log('Starting image download...');
 
     while (true) {
         const filename = await getImageFile(host, jobId, directory);
@@ -351,7 +350,6 @@ async function createDocument(host, parameters) {
             json: true,
             body: parameters
         });
-        console.log('Document created:', response);
         return response.status === 201 ? response.data : '';
     }
     catch (error) {
@@ -437,6 +435,9 @@ async function getDocumentFile(host, docId, directory) {
 
                 writer.on('close', () => clearTimeout(timeout));
             });
+        }
+        else {
+            console.error('Document fetch failed:', response.status);
         }
     }
     catch (error) {
